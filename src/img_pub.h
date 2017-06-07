@@ -24,12 +24,19 @@ public:
   virtual bool getData(std::string dir); 
   virtual bool getNextRGB(cv::Mat& );
   virtual bool getNextDpt(cv::Mat& ); 
-  
+  virtual bool getNextIr1(cv::Mat& ); 
+  virtual bool getNextIr2(cv::Mat& ); 
+
+  virtual bool moveNext();  // move current idx to the next 
+
   // publish keyframe data 
   ros::Publisher m_rgb_pub; // publish rgb 
   ros::Publisher m_dpt_pub; // publish dpt 
+  ros::Publisher m_ir1_pub; // publish ir1
+  ros::Publisher m_ir2_pub; // publish ir2
   ros::Rate* mp_pub_rate;   // publish rate 
 
+  bool publishRGBD_IR2(); 
   bool publishRGBD(); 
   bool publishRGB(); 
   bool mb_data_ready; 

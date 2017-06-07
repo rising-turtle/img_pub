@@ -54,7 +54,7 @@ bool CImgPubSeq::getNextRGB(cv::Mat& rgb)
   }
 
   stringstream ss; 
-  ss <<m_data_dir<<"/"<< m_prefix<<setfill('0')<<setw(m_padding_len)<<m_curr_idx++<<m_suffix; 
+  ss <<m_data_dir<<"/"<< m_prefix<<setfill('0')<<setw(m_padding_len)<<m_curr_idx<<m_suffix; 
 
   rgb = cv::imread(ss.str().c_str(), -1); 
 
