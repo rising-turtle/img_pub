@@ -22,6 +22,7 @@ class CImgPubRS : public CImgPub
     virtual bool getNextDpt(cv::Mat& ); 
     virtual bool getNextIr1(cv::Mat& );
     virtual bool getNextIr2(cv::Mat& );
+    virtual bool getNextTimeStamp(std::string& time); 
 
     // get data
     bool loadImages(const std::string strAssociationFilename);
@@ -32,7 +33,8 @@ class CImgPubRS : public CImgPub
     std::vector<std::string> mv_dpt;
     std::vector<std::string> mv_ir1;
     std::vector<std::string> mv_ir2; 
-    std::vector<double>      mv_timestamp; 
+    // std::vector<double>      mv_timestamp; 
+    std::vector<std::string> mv_timestamp; 
 };
 
 

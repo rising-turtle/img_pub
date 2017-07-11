@@ -50,7 +50,8 @@ bool CImgPubRS::loadImages(const std::string strAssociationFilename)
     {
       stringstream ss;
       ss << s;
-      double t;
+      // double t;
+      string t; 
       string sRGB, sD, sr1, sr2;
       ss >> t;
       mv_timestamp.push_back(t);
@@ -93,6 +94,13 @@ bool CImgPubRS::getImg(string fname, cv::Mat& img)
     ROS_WARN("img_pub_realsense.cpp: failed to load img at %s", fname.c_str()); 
     return false; 
   }
+  return true; 
+}
+
+bool CImgPubRS::getNextTimeStamp(std::string& t)
+{
+  if(!currValid()) return false; 
+  t = mv_timestamp[m_curr_idx];
   return true; 
 }
 

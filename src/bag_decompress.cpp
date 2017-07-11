@@ -52,16 +52,16 @@ int main(int argc, char* argv[])
 void processBagfile(string bagfile)
 {
   std::vector<std::string> topics;
-  string rgb_tpc = "/cam0/color"; 
+  string rgb_tpc = "/cam0/color"; // "/cam0/image_raw";   
   string dpt_tpc = "/cam0/depth"; 
-  string ir_tpc = "/cam0/ir";
+  string ir_tpc  = "/cam0/ir";
   string ir2_tpc = "/cam0/ir2"; 
   string imu_tpc = "/imu0";
-  topics.push_back("/cam0/color"); 
-  topics.push_back("/cam0/depth"); 
-  topics.push_back("/cam0/ir");
-  topics.push_back("/cam0/ir2");
-  topics.push_back("/imu0"); 
+  topics.push_back(rgb_tpc); 
+  topics.push_back(dpt_tpc); 
+  topics.push_back(ir_tpc);
+  topics.push_back(ir2_tpc);
+  topics.push_back(imu_tpc); 
 
   rosbag::Bag bag; 
   bag.open(bagfile, rosbag::bagmode::Read); 
@@ -83,7 +83,7 @@ void processBagfile(string bagfile)
   
   // imu file and timestamp file 
   ofstream imu_f(d_dir + "/imu_vn100.log"); 
-  ofstream img_f(d_dir + "/timestamp.log");
+  ofstream img_f(d_dir + "/timestamp.txt");
   img_f<<"index\ttimestamp"<<endl;
 
   // for extract cv::mat 
@@ -100,7 +100,7 @@ void processBagfile(string bagfile)
     {
       // receive a imu message
       sensor_msgs::ImuConstPtr simu = m.instantiate<sensor_msgs::Imu>(); 
-      imu_f<<simu->header.stamp<<"\t"<<simu->linear_acceleration.x << "\t"<<simu->linear_acceleration.y << "\t"
+      imu_f<<std::fixed<<simu->header.stamp<<"\t"<<simu->linear_acceleration.x << "\t"<<simu->linear_acceleration.y << "\t"
         <<simu->linear_acceleration.z<<"\t"<<simu->angular_velocity.x<<"\t"<<simu->angular_velocity.y<<"\t"
         <<simu->angular_velocity.z<<"\t"<<0.0<<"\t"<<0.0<<"\t"<<0.0<<endl;
       
