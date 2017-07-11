@@ -20,7 +20,7 @@ CImgPub::CImgPub():
   m_ir2_pub = n.advertise<sensor_msgs::Image>("/ir2", q); 
 
   ros::NodeHandle np("~"); 
-  int publish_rate = 30; 
+  int publish_rate = 10; 
   np.param("publish_rate", publish_rate, publish_rate); 
   mp_pub_rate = new ros::Rate(publish_rate); 
 }

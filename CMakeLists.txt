@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_filters
   sensor_msgs
   cv_bridge
+  rosbag
 )
 
 ###################################
@@ -54,6 +55,7 @@ link_directories(${OpenCV_LIBRARY_DIRS})
 set(IMG_PUB_SRCS src/img_pub_seq.cpp 
                  src/img_pub.cpp
                  src/img_pub_realsense.cpp
+                 src/img_pub_rgbd.cpp
 )
 
 ####### img_pub library #######
@@ -67,12 +69,20 @@ target_link_libraries(test_pub_realsense img_pub)
 add_executable(test_sub_realsense src/sub_img_realsense.cpp)
 target_link_libraries(test_sub_realsense ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+############## test pub & sub rgbd images ################
+add_executable(test_pub_rgbd src/test_img_pub_rgbd.cpp)
+target_link_libraries(test_pub_rgbd img_pub)
+
 ############### test pub & sub sequential images ####################
 add_executable(test_pub_seq src/test_img_pub_seq.cpp)
 target_link_libraries(test_pub_seq img_pub)
 
 add_executable(test_sub_seq src/sub_img_seq.cpp)
 target_link_libraries(test_sub_seq ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+############## operation on bagfile ###################
+add_executable(bag_decompress src/bag_decompress.cpp)
+target_link_libraries(bag_decompress ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}

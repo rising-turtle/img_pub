@@ -19,6 +19,11 @@ int main(int argc, char* argv[])
   string data_dir("/media/davidz/work/work/data/realsense/etasF4_06_01_01"); 
   np.param("data_dir", data_dir, data_dir); 
 
+  if(argc >= 2)
+    data_dir = string(argv[1]); 
+
+  ROS_WARN("pub_realsense.cpp: publish dataset in %s", data_dir.c_str());
+
   CImgPubRS pub; 
   pub.getData(data_dir); 
 
@@ -28,7 +33,7 @@ int main(int argc, char* argv[])
     {
       break; 
     }
-    ROS_INFO("test_img_pub_seq.cpp: succeed to publish a new image!"); 
+    ROS_INFO("test_img_pub_realsense.cpp: succeed to publish a new image!"); 
   }
 
   return 1; 
