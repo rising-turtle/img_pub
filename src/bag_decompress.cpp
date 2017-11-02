@@ -111,7 +111,8 @@ void processBagfile(string bagfile)
       sensor_msgs::ImageConstPtr simage = m.instantiate<sensor_msgs::Image>();
       stringstream tt; 
       tt << simage->header.stamp;
-      cout << "bag_decompress.cpp: receive an image msg at time: "<<tt.str()<<endl; 
+      // cout << "bag_decompress.cpp: receive an image msg at time: "<<tt.str()<<endl; 
+      cout << "bag_decompress.cpp: receive an image msg at time: "<<simage->header.stamp<<endl;
 
       if(last_time == "" || tt.str() != last_time) // first timestamp 
       {

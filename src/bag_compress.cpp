@@ -42,6 +42,11 @@ int main(int argc, char* argv[])
   ros::init(argc, argv, "bag_compress"); 
   ros::NodeHandle nh;
   ros::NodeHandle np("~"); 
+  if(argc <=2)
+  {
+    ROS_WARN("usage: ./bag_compress [data_dir] [bag_name]");
+    return 0; 
+  }
   if(argc >= 2)
     data_dir = argv[1]; 
   if(argc >= 3)
@@ -49,8 +54,8 @@ int main(int argc, char* argv[])
   
   // topics 
   string rgb_tpc = "/cam0/color"; 
-  string dpt_tpc = ""; //"/cam0/depth";
-  string ir_tpc = ""; // "/cam0/ir";
+  string dpt_tpc = "/cam0/depth";
+  string ir_tpc =  ""; // "/cam0/ir";
   string ir2_tpc = ""; // "/cam0/ir2"; 
   string imu_tpc = "/imu0"; 
 
@@ -96,7 +101,8 @@ int main(int argc, char* argv[])
       
       // imu msg
       sensor_msgs::Imu imu_msg; 
-      imu_msg.header.stamp = imuT; 
+      imu_msg.header.stamp = imuT;
+      imu_msg.header.seq = i; 
       imu_msg.linear_acceleration.x = m[i][0]; 
       imu_msg.linear_acceleration.y = m[i][1];
       imu_msg.linear_acceleration.z = m[i][2]; 
