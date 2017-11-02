@@ -84,6 +84,9 @@ target_link_libraries(test_sub_seq ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_executable(bag_decompress src/bag_decompress.cpp)
 target_link_libraries(bag_decompress ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+add_executable(bag_decompress_imu src/bag_decompress_imu.cpp)
+target_link_libraries(bag_decompress_imu ${catkin_LIBRARIES})
+
 add_executable(bag_compress src/bag_compress.cpp)
 target_link_libraries(bag_compress img_pub ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
