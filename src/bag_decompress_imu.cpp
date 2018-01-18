@@ -108,7 +108,7 @@ void processBagfile(string bagfile)
         }else
         {
           ROS_WARN_STREAM("bag_decompress_imu.cpp: IMU msg at time "<<cur_t<<" dt_ms = "<<dt_ms); 
-          sleep(10); 
+          // sleep(10); 
         }
       }
 
