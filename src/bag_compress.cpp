@@ -37,6 +37,14 @@ ros::Time compT(string curr_t)
     return rost; 
 }
 
+ros::Time compT6(string curr_t)
+{
+    string secs = curr_t.substr(0, 10); 
+    string nanosecs = curr_t.substr(11, 6); 
+    ros::Time rost(std::stoi(secs), std::stoi(nanosecs)*1000.); 
+    return rost; 
+}
+
 int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "bag_compress"); 
@@ -94,7 +102,7 @@ int main(int argc, char* argv[])
     // write imu msgs 
     while(i < m.size())
     {
-      ros::Time imuT = compT(mt[i]);
+      ros::Time imuT = compT6(mt[i]);
       if(rost < imuT) 
         break; // image earlier than imu, write image 
       // imu earlier than image, write imu 
@@ -112,6 +120,7 @@ int main(int argc, char* argv[])
       imu_msg.angular_velocity.z = m[i][5]; 
 
       bag.write(imu_tpc, imuT, imu_msg); 
+      cout<<"write imu timestamp = "<<std::fixed<<imuT.toSec()<<endl;
       i++; // next imu msg 
     }
 
@@ -125,12 +134,14 @@ int main(int argc, char* argv[])
       rgb_msg.encoding = sensor_msgs::image_encodings::BGR8; 
       rgb_msg.header.stamp = rost;
       rgb_msg.image = rgb; 
+      cout <<"write rgb timestamp = "<<std::fixed<<rost.toSec()<<endl;
       bag.write(rgb_tpc, rost, rgb_msg); 
     }
     if(dpt_tpc != "" && pub.getNextDpt(dpt))
     {
       cv_bridge::CvImage dpt_msg; 
-      dpt_msg.encoding = sensor_msgs::image_encodings::TYPE_32FC1; 
+      // dpt_msg.encoding = sensor_msgs::image_encodings::TYPE_32FC1; 
+      dpt_msg.encoding = sensor_msgs::image_encodings::TYPE_16UC1; 
       dpt_msg.header.stamp = rost; 
       dpt_msg.image = dpt; 
       bag.write(dpt_tpc, rost, dpt_msg); 
