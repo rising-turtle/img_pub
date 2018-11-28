@@ -85,6 +85,7 @@ int main(int argc, char* argv[])
   
   // write image information 
   cv::Mat rgb, dpt, ir, ir2;
+  int rgb_type; 
   int i=0; 
   do
   {
@@ -102,7 +103,7 @@ int main(int argc, char* argv[])
     // write imu msgs 
     while(i < m.size())
     {
-      ros::Time imuT = compT6(mt[i]);
+      ros::Time imuT = compT(mt[i]);
       if(rost < imuT) 
         break; // image earlier than imu, write image 
       // imu earlier than image, write imu 
@@ -120,7 +121,7 @@ int main(int argc, char* argv[])
       imu_msg.angular_velocity.z = m[i][5]; 
 
       bag.write(imu_tpc, imuT, imu_msg); 
-      cout<<"write imu timestamp = "<<std::fixed<<imuT.toSec()<<endl;
+      cout<<"write imu timestamp = "<<std::fixed<<imuT.toSec()<<" string = "<<mt[i]<<endl;
       i++; // next imu msg 
     }
 
@@ -131,10 +132,14 @@ int main(int argc, char* argv[])
     if(rgb_tpc != "")
     {
       cv_bridge::CvImage rgb_msg; 
-      rgb_msg.encoding = sensor_msgs::image_encodings::BGR8; 
+      rgb_type = rgb.type(); 
+      if(rgb_type == CV_8UC1) // only check 8UC1, future 16UC1
+	rgb_msg.encoding = sensor_msgs::image_encodings::MONO8; 
+      else
+	rgb_msg.encoding = sensor_msgs::image_encodings::BGR8; 
       rgb_msg.header.stamp = rost;
       rgb_msg.image = rgb; 
-      cout <<"write rgb timestamp = "<<std::fixed<<rost.toSec()<<endl;
+      cout <<"write rgb timestamp = "<<std::fixed<<rost.toSec()<<" string = "<<curr_t<<endl;
       bag.write(rgb_tpc, rost, rgb_msg); 
     }
     if(dpt_tpc != "" && pub.getNextDpt(dpt))
