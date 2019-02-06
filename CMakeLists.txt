@@ -93,6 +93,9 @@ target_link_libraries(bag_decompress_imu ${catkin_LIBRARIES})
 add_executable(bag_compress src/bag_compress.cpp)
 target_link_libraries(bag_compress img_pub ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+add_executable(bag_compress_rgbd src/bag_compress_rgbd.cpp)
+target_link_libraries(bag_compress_rgbd img_pub ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/img_pub.cpp
