@@ -99,6 +99,9 @@ target_link_libraries(bag_compress img_pub ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_executable(bag_compress_rgbd src/bag_compress_rgbd.cpp)
 target_link_libraries(bag_compress_rgbd img_pub ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+
+add_executable(sr4k_bdat_to_rgbd src/sr4k_bdat_to_rgbd.cpp src/sr4k_reader.cpp)
+target_link_libraries(sr4k_bdat_to_rgbd ${OpenCV_LIBS})
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/img_pub.cpp
