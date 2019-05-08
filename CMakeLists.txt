@@ -42,6 +42,7 @@ set(CMAKE_CXX_FLAGS "-ggdb -g -O3 -w -std=c++11 -fpermissive") # -fPIC -fpermiss
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ./src
+  "/usr/include/eigen3"
 )
 ####### OpenCV #######
 find_package(OpenCV)
@@ -102,6 +103,11 @@ target_link_libraries(bag_compress_rgbd img_pub ${catkin_LIBRARIES} ${OpenCV_LIB
 
 add_executable(sr4k_bdat_to_rgbd src/sr4k_bdat_to_rgbd.cpp src/sr4k_reader.cpp)
 target_link_libraries(sr4k_bdat_to_rgbd ${OpenCV_LIBS})
+
+################### handle struct core data ###################
+add_executable(bag_decompress_rgbd_struct_core src/bag_decompress_rgbd_struct_core.cpp)
+target_link_libraries(bag_decompress_rgbd_struct_core ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/img_pub.cpp
