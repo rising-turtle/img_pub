@@ -29,19 +29,21 @@ bool operator<(const ros::Time& t1, const ros::Time& t2)
   return ((t1.sec<t2.sec) || (t1.sec==t2.sec && t1.nsec < t2.nsec));
 }
 
-ros::Time compT(string curr_t)
-{
-    string secs = curr_t.substr(0, 10); 
-    string nanosecs = curr_t.substr(11, 9); 
-    ros::Time rost(std::stoi(secs), std::stoi(nanosecs)); 
-    return rost; 
-}
-
 ros::Time compT6(string curr_t)
 {
     string secs = curr_t.substr(0, 10); 
     string nanosecs = curr_t.substr(11, 6); 
     ros::Time rost(std::stoi(secs), std::stoi(nanosecs)*1000.); 
+    return rost; 
+}
+
+ros::Time compT(string curr_t)
+{ 
+    if(curr_t.size() <= 17) 
+      return compT6(curr_t); 
+    string secs = curr_t.substr(0, 10); 
+    string nanosecs = curr_t.substr(11, 9); 
+    ros::Time rost(std::stoi(secs), std::stoi(nanosecs)); 
     return rost; 
 }
 
