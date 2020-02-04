@@ -126,10 +126,12 @@ void processBagfile(string bagfile)
       if(m.getTopic() == rgb_tpc || ("/"+m.getTopic()) == rgb_tpc)
       {
         // receive a rgb image 
-        cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::BGR8); 
+        // cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::BGR8); 
+        cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::TYPE_8UC3); 
+
         imwrite(d_rgb + "/"+ tt.str()+".png", cv_ptrRGB->image); 
-	imshow("rgb_file", cv_ptrRGB->image); 
-	waitKey(3);
+	      imshow("rgb_file", cv_ptrRGB->image); 
+	      waitKey(3);
       }
       if(m.getTopic() == dpt_tpc || ("/"+m.getTopic()) == dpt_tpc)
       {
