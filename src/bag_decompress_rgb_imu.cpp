@@ -53,14 +53,14 @@ void processBagfile(string bagfile)
 {
   std::vector<std::string> topics;
   string rgb_tpc = "/cam0/color"; // "/cam0/image_raw";   
-  string dpt_tpc = "/cam0/depth"; 
-  string ir_tpc  = "/cam0/ir";
-  string ir2_tpc = "/cam0/ir2"; 
-  string imu_tpc = "/imu0";
+  // string dpt_tpc = "/cam0/depth"; 
+  // string ir_tpc  = "/cam0/ir";
+  // string ir2_tpc = "/cam0/ir2"; 
+  string imu_tpc = "/imu"; // /imu0
   topics.push_back(rgb_tpc); 
-  topics.push_back(dpt_tpc); 
-  topics.push_back(ir_tpc);
-  topics.push_back(ir2_tpc);
+  // topics.push_back(dpt_tpc); 
+  // topics.push_back(ir_tpc);
+  // topics.push_back(ir2_tpc);
   topics.push_back(imu_tpc); 
 
   rosbag::Bag bag; 
@@ -70,9 +70,9 @@ void processBagfile(string bagfile)
   // mkdir 
   string d_dir = base_dir;//gDataName; 
   string d_rgb = d_dir + "/color"; 
-  string d_dpt = d_dir + "/depth"; 
-  string d_ir = d_dir + "/ir"; 
-  string d_ir2 = d_dir + "/ir2"; 
+  // string d_dpt = d_dir + "/depth"; 
+  // string d_ir = d_dir + "/ir"; 
+  // string d_ir2 = d_dir + "/ir2"; 
   // std::cout<<d_dir<<"   d_dir_got|||"<<d_rgb<<"   d_rgb|||"<<d_dpt<<"   d_dpt|||"<<std::endl;
 
   mkdir(d_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -124,11 +124,13 @@ void processBagfile(string bagfile)
       if(m.getTopic() == rgb_tpc || ("/"+m.getTopic()) == rgb_tpc)
       {
         // receive a rgb image 
-        cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::BGR8); 
+        // cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::BGR8); 
+	cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::TYPE_8UC3); 
+
         imwrite(d_rgb + "/"+ tt.str()+".png", cv_ptrRGB->image); 
 	imshow("rgb_file", cv_ptrRGB->image); 
 	waitKey(3);
-      }
+      }/*
       if(m.getTopic() == dpt_tpc || ("/"+m.getTopic()) == dpt_tpc)
       {
         // receive a dpt image
@@ -148,7 +150,7 @@ void processBagfile(string bagfile)
         // receive a ir2 image
         // cv_ptrIr2 = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::TYPE_8UC1); 
         // imwrite(d_ir2 + "/" + tt.str()+".png", cv_ptrIr2->image); 
-      }
+      }*/
     }
   }
   return ; 
