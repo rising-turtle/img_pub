@@ -212,12 +212,14 @@ bool loadIMUFile(vector<double>& timestamp, vector<vector<double> >& vimus)
 int find_index(vector<double>& imu_times, int pre_index, double cur_img_tp)
 {
 	int ret = pre_index; 
-	for(int i = ret+1; i < imu_times.size(); i++){
+	int i; 
+	for(i = ret+1; i < imu_times.size(); i++){
 		if(imu_times[i] >= cur_img_tp){
 			ret = i-1; 
 			break; 
 		}
 	}
+	if(i== imu_times.size()) ret = i-1; 
 	return ret; 
 }
 
