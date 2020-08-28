@@ -118,6 +118,9 @@ target_link_libraries(bag_decompress_rgbd_struct_core ${catkin_LIBRARIES} ${Open
 add_executable(bag_decompress_rgbd_l515 src/bag_decompress_rgbd_imu_l515.cpp)
 target_link_libraries(bag_decompress_rgbd_l515 ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+add_executable(bag_conversion_l515 src/bag_conversion_l515.cpp)
+target_link_libraries(bag_conversion_l515 ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/img_pub.cpp

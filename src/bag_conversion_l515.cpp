@@ -1,7 +1,7 @@
 /*
- *  May 8 2019, He Zhang, hzhang8@vcu.edu 
+ *  Aug. 28 2020, He Zhang, hzhang8@vcu.edu 
  *
- *  decompress rosbag file from structure core, need to align them 
+ *  convert the original bag into one used by vio  
  *
  * */
 
@@ -11,7 +11,6 @@
 #include <chrono>
 #include <iomanip>
 #include <sys/stat.h>
-#include <deque>
 
 #include <ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
@@ -31,7 +30,7 @@ using namespace cv;
 
 #define SQ(x) (((x)*(x)))
 
-string base_dir(""); 
+string bag_out(""); 
 
 struct v3d{
 
@@ -163,22 +162,19 @@ public:
 
 void processBagfile(string bagfile); 
 
-void handle_rgb(const cv::Mat& rgb, cv::Mat& rgb_out);
-void handle_dpt(const cv::Mat& dpt, cv::Mat& dpt_out);
-
 int main(int argc, char* argv[])
 {
-  ros::init(argc, argv, "bag_decompress_rgbd_imu_l515");
+  ros::init(argc, argv, "bag_conversion_l515");
   
   ros::NodeHandle nh; 
 
-  ROS_INFO("./bag_decompress_rgbd_imu_l515 [bagfile] [output_dir]");
+  ROS_INFO("./bag_conversion_l515 [in_bagfile] [out_bagfile]");
 
   string bagfile = "";
   if(argc >= 2) 
     bagfile = argv[1]; 
   if(argc >= 3)
-    base_dir = argv[2]; 
+    bag_out = argv[2]; 
 
   processBagfile(bagfile); 
 
@@ -201,28 +197,15 @@ void processBagfile(string bagfile)
   topics.push_back(gyo_tpc); 
   topics.push_back(acc_tpc); 
 
+  string imu_tpc = "/imu"; 
+
   rosbag::Bag bag; 
   bag.open(bagfile, rosbag::bagmode::Read); 
   rosbag::View view(bag, rosbag::TopicQuery(topics));
 
-  // mkdir 
-  string d_dir = base_dir;//gDataName; 
-  string d_rgb = d_dir + "/color"; 
-  string d_dpt = d_dir + "/depth"; 
-  // string d_ir = d_dir + "/ir"; 
-  // string d_ir2 = d_dir + "/ir2"; 
-  // std::cout<<d_dir<<"   d_dir_got|||"<<d_rgb<<"   d_rgb|||"<<d_dpt<<"   d_dpt|||"<<std::endl;
-
-  mkdir(d_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  mkdir(d_rgb.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  mkdir(d_dpt.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  // mkdir(d_ir.c_str(),  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  // mkdir(d_ir2.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-  
-  // imu file and timestamp file 
-  ofstream imu_f(d_dir + "/imu.log"); 
-  ofstream img_f(d_dir + "/timestamp.txt");
-  // img_f<<"index\ttimestamp"<<endl;
+  // rosbag for write 
+  rosbag::Bag outbag; 
+  outbag.open(bag_out, rosbag::bagmode::Write); 
 
   // for extract cv::mat 
   cv_bridge::CvImageConstPtr cv_ptrRGB;
@@ -243,27 +226,23 @@ void processBagfile(string bagfile)
     if(m.getTopic() == gyo_tpc){
         // receive a imu message
         sensor_msgs::ImuConstPtr simu = m.instantiate<sensor_msgs::Imu>(); 
-        cout<<"bag_decompress_rgbd_imu_l515.cpp: receive an gyro at time: "<<simu->header.stamp<<endl;
+        cout<<"bag_conversion_l515.cpp: receive an gyro at time: "<<simu->header.stamp<<endl;
         syn.newGyroSample(simu); 
 
         vector<sensor_msgs::Imu> mv = syn.getIMU(); 
         for(int i=0; i<mv.size(); i++){
-          imu_f<<std::fixed<<mv[i].header.stamp<<"\t"<<mv[i].linear_acceleration.x << "\t"<<mv[i].linear_acceleration.y << "\t"
-            <<mv[i].linear_acceleration.z<<"\t"<<mv[i].angular_velocity.x<<"\t"<<mv[i].angular_velocity.y<<"\t"
-            <<mv[i].angular_velocity.z<<endl;
+          outbag.write(imu_tpc, mv[i].header.stamp, mv[i]); 
         }
       }
     else if(m.getTopic() == acc_tpc){
           // receive a imu message
         sensor_msgs::ImuConstPtr simu = m.instantiate<sensor_msgs::Imu>(); 
-        cout<<"bag_decompress_rgbd_imu_l515.cpp: receive an accel at time: "<<simu->header.stamp<<endl;
+        cout<<"bag_conversion_l515.cpp: receive an accel at time: "<<simu->header.stamp<<endl;
         syn.newAccSample(simu);
 
         vector<sensor_msgs::Imu> mv = syn.getIMU(); 
         for(int i=0; i<mv.size(); i++){
-          imu_f<<std::fixed<<mv[i].header.stamp<<"\t"<<mv[i].linear_acceleration.x << "\t"<<mv[i].linear_acceleration.y << "\t"
-            <<mv[i].linear_acceleration.z<<"\t"<<mv[i].angular_velocity.x<<"\t"<<mv[i].angular_velocity.y<<"\t"
-            <<mv[i].angular_velocity.z<<endl;
+          outbag.write(imu_tpc, mv[i].header.stamp, mv[i]); 
         }
       }
     else
@@ -272,7 +251,7 @@ void processBagfile(string bagfile)
       stringstream tt; 
       tt << simage->header.stamp;
       // cout << "bag_decompress.cpp: receive an image msg at time: "<<tt.str()<<endl; 
-      cout << "bag_decompress_rgbd_imu_l515.cpp: receive an image msg at time: "<<simage->header.stamp<<endl;
+      cout << "bag_conversion_l515.cpp: receive an image msg at time: "<<simage->header.stamp<<endl;
 
       if(last_time == "" || tt.str() != last_time) // first timestamp 
       {
@@ -281,7 +260,7 @@ void processBagfile(string bagfile)
         //  <<last_time<<"\tir/"<<last_time<<".png"<<"\t"<<last_time<<"\tir2/"<<last_time<<".png"<<endl;
         // img_f<<last_time<<"\tcolor/"<<last_time<<".png"<<"\t"<<last_time<<"\tdepth/"<<last_time<<".png"<<"\t"
         //  <<last_time<<"\tir/"<<last_time<<".png"<<"\t"<<last_time<<"\tir2/"<<last_time<<".png"<<endl;
-        img_f<<last_time<<"\tcolor/"<<last_time<<".png"<<"\t"<<last_time<<"\tdepth/"<<last_time<<".png"<<endl;
+        // img_f<<last_time<<"\tcolor/"<<last_time<<".png"<<"\t"<<last_time<<"\tdepth/"<<last_time<<".png"<<endl;
       }
       
       if(m.getTopic() == rgb_tpc || ("/"+m.getTopic()) == rgb_tpc)
@@ -289,142 +268,30 @@ void processBagfile(string bagfile)
         // receive a rgb image 
         // cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::BGR8); 
         cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::TYPE_8UC3); 
-
         // handle rgb 
         cv::Mat rgb; 
         // handle_rgb(cv_ptrRGB->image, rgb); 
         rgb = cv_ptrRGB->image; 
-        // imwrite(d_rgb + "/"+ tt.str()+".png", cv_ptrRGB->image); 
+        outbag.write(rgb_tpc, simage->header.stamp, simage); 
 	      imshow("rgb_file", rgb); 
-        // imwrite(d_rgb + "/"+ tt.str()+".png", rgb); 
 	      waitKey(3);
       }
       if(m.getTopic() == dpt_tpc || ("/"+m.getTopic()) == dpt_tpc)
       {
         // receive a dpt image
-        cv_ptrD = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::TYPE_16UC1); 
-
+        // cv_ptrD = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::TYPE_16UC1); 
         // handle dpt 
-        cv::Mat dpt;
+        // cv::Mat dpt;
         // handle_dpt(cv_ptrD->image, dpt); 
-        dpt = cv_ptrD->image; 
+        // dpt = cv_ptrD->image; 
         // imwrite(d_dpt + "/"+tt.str() +".png", cv_ptrD->image); 
         // imshow("dpt_file", cv_ptrD->image); 
         // imwrite(d_dpt + "/"+tt.str() +".png", dpt); 
+        outbag.write(dpt_tpc, simage->header.stamp, simage); 
         waitKey(3); 
       }
     }
   }
-  return ; 
-}
-
-
-void handle_rgb(const cv::Mat& rgb, cv::Mat& rgb_out)
-{
-  // undistortion 
-
-  float dist_data[5] = {0.14949573576450348, -0.49464672803878784, 0.00035660676076076925, 0.0001328527432633564, 0.42560458183288574}; 
-  cv::Mat distCoeffs(1, 5, CV_32F, dist_data);  
-  float cam_matrix_data[9] = {907.6046142578125, 0.0, 648.9068603515625, 0.0, 908.1854858398438, 371.2373352050781, 0.0, 0.0, 1.0};  
-  cv::Mat cameraMatrix(3, 3, CV_32F, cam_matrix_data); 
-
-  cv::undistort(rgb, rgb_out, cameraMatrix, distCoeffs); 
-
-  // ROS_DEBUG("align_struct_core: rgb_out size %d x %d", rgb_out.cols, rgb_out.rows); 
-}
-
-void handle_dpt(const cv::Mat& dpt, cv::Mat& dpt_out)
-{
-  // construct 3d points 
-  vector<Point3f> pts;
-  pts.reserve(dpt.rows * dpt.cols);  
-  float fx, fy, cx, cy; // not distortion for depth camera 
-
-  // depth camera
-  fx = 907.6046142578125; fy = 556.875; cx = 295.5; cy = 232.25; 
-  float z,x,y ; 
-  for(int r = 0; r<dpt.rows; r++){
-    for(int c = 0; c<dpt.cols; c++){
-      z = dpt.at<unsigned short>(r,c) * 0.001; 
-      if(z >= 0.3 && z <= 7){ // range of structure core
-        x = ((c - cx)/fx) * z; 
-        y = ((r - cy)/fy) * z; 
-        pts.push_back(Point3f(x, y, z)); 
-      }
-    }
-  }
-
-  // transform into color reference 
-  Eigen::Matrix4f Tc2d; 
-  Tc2d << 0.9999665021896362, 0.008139053359627724, 0.0008413196774199605, -0.0013251318596303463,
-    -0.008115333504974842, 0.9996509552001953, -0.02514067105948925, 0.013551371172070503,
-    -0.0010456473100930452, 0.025133000686764717, 0.9996835589408875, -0.004039745312184095,
-    0, 0, 0, 1;
-
-  // Eigen::Matrix4f Tc2d = Td2c.inverse(); 
-  for(int i=0; i<pts.size(); i++){
-    Point3f& pt = pts[i]; 
-    Eigen::Vector4f pt_d(pt.x, pt.y, pt.z, 1.0); 
-    Eigen::Vector4f pt_c = Tc2d * pt_d; 
-    pt = Point3f(pt_c(0), pt_c(1), pt_c(2)); 
-  }
-  vector<Point2f> pts_2d(pts.size()); 
-
-  // color camera 
-   fx = 444.277; 
-   fy = 444.764; 
-   cx = 324.055; 
-   cy = 254.516; 
-
-  // (u - cx)/x = fx/z
-
-  for(int i=0; i<pts.size(); i++){
-    Point2f& pt_2d = pts_2d[i];
-    Point3f& pt = pts[i];  
-    pt_2d.x = (pt.x/pt.z)*fx + cx; 
-    pt_2d.y = (pt.y/pt.z)*fy + cy; 
-  }
-
-  // ROS_INFO("point 3d %d point 2d : %d", pts.size(), pts_2d.size());
-/*
-  // project pts into image 
-  float cam_matrix_data[9] = {444.277, 0, 324.055, 0, 444.764, 254.516, 0, 0, 1};  
-  cv::Mat cameraMatrix(3, 3, CV_32F, cam_matrix_data); 
-  float dist_data[5] = {0,0,0,0,0}; //{0.320760, -0.864822, 0, 0, 0.589437}; 
-  cv::Mat distCoeffs(1, 5, CV_32F, dist_data);  
-  float rvec_data[3] = {0,0,0}; 
-  cv::Mat rvec(3,1, CV_32F, rvec_data); 
-  float tvec_data[3] = {0,0,0}; 
-  cv::Mat tvec(3,1, CV_32F, tvec_data); 
-
-  projectPoints(pts, rvec, tvec, cameraMatrix, distCoeffs, pts_2d);
-  ROS_DEBUG("after projectPoints");
-*/
-  // 
-  cv::Mat dpt_dis = cv::Mat(dpt.rows, dpt.cols, CV_32FC1, Scalar(0.0)); 
-  // cv::Mat dpt_cnt = cv::Mat(dpt.rows, dpt.cols, CV_32FC1, Scalar(0.0)); 
-  // out_dpt = cv::Mat(dpt.cols, dpt.rows, CV_16UC1, Scalar) 
-  int cnt = 0; 
-
-  for(int i=0; i<pts_2d.size(); i++){
-    // float c = pts_2d[i].x; 
-    // float r = pts_2d[i].y; 
-    
-    int c = std::round(pts_2d[i].x); 
-    int r = std::round(pts_2d[i].y); 
-
-    if(c < 0 || r < 0 || c >= dpt.cols - 1 || r >= dpt.rows - 1)
-      continue; 
-
-    ++cnt; 
-
-    dpt_dis.at<float>(r, c) = pts[i].z; 
-
- }
-
-  // ROS_INFO("valid points number: %d", cnt);
-
-  // convert 
-  dpt_dis.convertTo(dpt_out, CV_16UC1, 1000);
+  outbag.close();
   return ; 
 }
