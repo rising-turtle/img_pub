@@ -32,6 +32,13 @@ using namespace cv;
 
 string base_dir(""); 
 
+struct v3d{
+
+  double d[3]; 
+  double timestamp; 
+
+}; 
+
 void processBagfile(string bagfile); 
 
 void handle_rgb(const cv::Mat& rgb, cv::Mat& rgb_out);
@@ -63,12 +70,14 @@ void processBagfile(string bagfile)
   string dpt_tpc = "/camera/aligned_depth_to_color/image_raw"; 
   // string ir_tpc  = "/cam0/ir";
   // string ir2_tpc = "/cam0/ir2"; 
-  // string imu_tpc = "/imu0";
+  string acc_tpc = "/camera/accel/sample";
+  string gyo_tpc = "/camera/gyro/sample"; 
   topics.push_back(rgb_tpc); 
   topics.push_back(dpt_tpc); 
   // topics.push_back(ir_tpc);
   // topics.push_back(ir2_tpc);
-  // topics.push_back(imu_tpc); 
+  topics.push_back(gyo_tpc); 
+  topics.push_back(acc_tpc); 
 
   rosbag::Bag bag; 
   bag.open(bagfile, rosbag::bagmode::Read); 
@@ -89,7 +98,7 @@ void processBagfile(string bagfile)
   // mkdir(d_ir2.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
   
   // imu file and timestamp file 
-  // ofstream imu_f(d_dir + "/imu_vn100.log"); 
+  ofstream imu_f(d_dir + "/imu.log"); 
   ofstream img_f(d_dir + "/timestamp.txt");
   // img_f<<"index\ttimestamp"<<endl;
 
@@ -120,12 +129,32 @@ void processBagfile(string bagfile)
       break; 
     }
 
+    if(m.getTopic() == gyo_tpc){
+        // receive a imu message
+        sensor_msgs::ImuConstPtr simu = m.instantiate<sensor_msgs::Imu>(); 
+        imu_f<<std::fixed<<"gyr: "<<simu->header.stamp<<"\t"<<simu->linear_acceleration.x << "\t"<<simu->linear_acceleration.y << "\t"
+          <<simu->linear_acceleration.z<<"\t"<<simu->angular_velocity.x<<"\t"<<simu->angular_velocity.y<<"\t"
+          <<simu->angular_velocity.z<<endl;
+      
+        cout<<"bag_decompress_rgbd_imu_l515.cpp: receive an IMU msg at time: "<<simu->header.stamp<<endl;
+
+      }
+    else if(m.getTopic() == acc_tpc){
+          // receive a imu message
+        sensor_msgs::ImuConstPtr simu = m.instantiate<sensor_msgs::Imu>(); 
+        imu_f<<std::fixed<<"acc: "<<simu->header.stamp<<"\t"<<simu->linear_acceleration.x << "\t"<<simu->linear_acceleration.y << "\t"
+          <<simu->linear_acceleration.z<<"\t"<<simu->angular_velocity.x<<"\t"<<simu->angular_velocity.y<<"\t"
+          <<simu->angular_velocity.z<<endl;
+      
+        cout<<"bag_decompress_rgbd_imu_l515.cpp: receive an IMU msg at time: "<<simu->header.stamp<<endl;
+      }
+    else
     {
       sensor_msgs::ImageConstPtr simage = m.instantiate<sensor_msgs::Image>();
       stringstream tt; 
       tt << simage->header.stamp;
       // cout << "bag_decompress.cpp: receive an image msg at time: "<<tt.str()<<endl; 
-      cout << "bag_decompress_rgbd_structure_core.cpp: receive an image msg at time: "<<simage->header.stamp<<endl;
+      cout << "bag_decompress_rgbd_imu_l515.cpp: receive an image msg at time: "<<simage->header.stamp<<endl;
 
       if(last_time == "" || tt.str() != last_time) // first timestamp 
       {
@@ -137,6 +166,8 @@ void processBagfile(string bagfile)
         img_f<<last_time<<"\tcolor/"<<last_time<<".png"<<"\t"<<last_time<<"\tdepth/"<<last_time<<".png"<<endl;
       }
       
+  
+
       if(m.getTopic() == rgb_tpc || ("/"+m.getTopic()) == rgb_tpc)
       {
         // receive a rgb image 
@@ -145,10 +176,11 @@ void processBagfile(string bagfile)
 
         // handle rgb 
         cv::Mat rgb; 
-        handle_rgb(cv_ptrRGB->image, rgb); 
+        // handle_rgb(cv_ptrRGB->image, rgb); 
+        rgb = cv_ptrRGB->image; 
         // imwrite(d_rgb + "/"+ tt.str()+".png", cv_ptrRGB->image); 
 	      imshow("rgb_file", rgb); 
-        imwrite(d_rgb + "/"+ tt.str()+".png", rgb); 
+        // imwrite(d_rgb + "/"+ tt.str()+".png", rgb); 
 	      waitKey(3);
       }
       if(m.getTopic() == dpt_tpc || ("/"+m.getTopic()) == dpt_tpc)
@@ -158,10 +190,11 @@ void processBagfile(string bagfile)
 
         // handle dpt 
         cv::Mat dpt;
-        handle_dpt(cv_ptrD->image, dpt); 
+        // handle_dpt(cv_ptrD->image, dpt); 
+        dpt = cv_ptrD->image; 
         // imwrite(d_dpt + "/"+tt.str() +".png", cv_ptrD->image); 
-        imshow("dpt_file", cv_ptrD->image); 
-        imwrite(d_dpt + "/"+tt.str() +".png", dpt); 
+        // imshow("dpt_file", cv_ptrD->image); 
+        // imwrite(d_dpt + "/"+tt.str() +".png", dpt); 
         waitKey(3); 
       }
     }

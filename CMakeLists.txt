@@ -114,6 +114,10 @@ target_link_libraries(sr4k_bdat_imu_to_bag ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_executable(bag_decompress_rgbd_struct_core src/bag_decompress_rgbd_struct_core.cpp)
 target_link_libraries(bag_decompress_rgbd_struct_core ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+################### handle intel l515 data ###################
+add_executable(bag_decompress_rgbd_l515 src/bag_decompress_rgbd_imu_l515.cpp)
+target_link_libraries(bag_decompress_rgbd_l515 ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/img_pub.cpp
