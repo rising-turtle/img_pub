@@ -1,7 +1,8 @@
 /*
- *  July 10 2017, He Zhang, hxzhang1@ualr.edu
+ *  Sep. 30, 2020, He Zhang, hzhang8@vcu.edu
  *
  *  decompress rosbag file,
+ *  gray + imu
  *
  * */
 
@@ -27,18 +28,18 @@ using namespace std;
 using namespace cv;
 
 string base_dir("");
-string image_topic = "/cam0/color";
-string imu_topic = "/imu";
+string image_topic = "/cam0/image_raw";
+string imu_topic = "/imu0";
 
 void processBagfile(string bagfile);
 
 int main(int argc, char* argv[])
 {
-  ros::init(argc, argv, "bag_decompress_rgb_imu");
+  ros::init(argc, argv, "bag_decompress_gray_imu");
 
   ros::NodeHandle nh;
 
-  ROS_INFO("./bag_decompress_rgb_imu bagfile output_dir [image_topic] [imu_topic]");
+  ROS_INFO("./bag_decompress_gray_imu bagfile output_dir [image_topic] [imu_topic]");
 
   string bagfile = "";
   if(argc >= 2)
@@ -110,7 +111,8 @@ void processBagfile(string bagfile)
       sensor_msgs::ImuConstPtr simu = m.instantiate<sensor_msgs::Imu>();
       imu_f<<std::fixed<<simu->header.stamp<<"\t"<<simu->linear_acceleration.x << "\t"<<simu->linear_acceleration.y << "\t"
         <<simu->linear_acceleration.z<<"\t"<<simu->angular_velocity.x<<"\t"<<simu->angular_velocity.y<<"\t"
-        <<simu->angular_velocity.z<<"\t"<<0.0<<"\t"<<0.0<<"\t"<<0.0<<endl;
+        <<simu->angular_velocity.z<<endl;
+        // "\t"<<0.0<<"\t"<<0.0<<"\t"<<0.0<<endl;
 
       cout<<"bag_decompress.cpp: receive an IMU msg at time: "<<simu->header.stamp<<endl;
 
@@ -125,19 +127,20 @@ void processBagfile(string bagfile)
       if(last_time == "" || tt.str() != last_time) // first timestamp
       {
         last_time = tt.str();
-        img_f<<last_time<<"\tcolor/"<<last_time<<".png"<<"\t"<<last_time<<"\tdepth/"<<last_time<<".exr"<<"\t"
-          <<last_time<<"\tir/"<<last_time<<".png"<<"\t"<<last_time<<"\tir2/"<<last_time<<".png"<<endl;
+        img_f<<last_time<<"\tcolor/"<<last_time<<".png"<<endl;
+        // img_f<<last_time<<"\tcolor/"<<last_time<<".png"<<"\t"<<last_time<<"\tdepth/"<<last_time<<".exr"<<"\t"
+        //    <<last_time<<"\tir/"<<last_time<<".png"<<"\t"<<last_time<<"\tir2/"<<last_time<<".png"<<endl;
       }
 
       if(m.getTopic() == rgb_tpc || ("/"+m.getTopic()) == rgb_tpc)
       {
         // receive a rgb image
         // cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::BGR8);
-	cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::TYPE_8UC3);
+	      cv_ptrRGB = cv_bridge::toCvShare(simage, sensor_msgs::image_encodings::TYPE_8UC1);
 
         imwrite(d_rgb + "/"+ tt.str()+".png", cv_ptrRGB->image);
-	imshow("rgb_file", cv_ptrRGB->image);
-	waitKey(3);
+	      imshow("rgb_file", cv_ptrRGB->image);
+	      waitKey(3);
       }/*
       if(m.getTopic() == dpt_tpc || ("/"+m.getTopic()) == dpt_tpc)
       {

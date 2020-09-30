@@ -88,6 +88,9 @@ target_link_libraries(bag_decompress ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_executable(bag_decompress_rgb_imu src/bag_decompress_rgb_imu.cpp)
 target_link_libraries(bag_decompress_rgb_imu ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+add_executable(bag_decompress_gray_imu src/bag_decompress_gray_imu.cpp)
+target_link_libraries(bag_decompress_gray_imu ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
 add_executable(bag_decompress_rgbd_imu src/bag_decompress_rgbd_imu.cpp)
 target_link_libraries(bag_decompress_rgbd_imu ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
