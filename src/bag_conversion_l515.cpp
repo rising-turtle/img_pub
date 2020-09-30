@@ -223,7 +223,7 @@ void processBagfile(string bagfile)
       break; 
     }
 
-    if(m.getTopic() == gyo_tpc){
+    if(m.getTopic() == gyo_tpc || ("/"+m.getTopic()) == gyo_tpc){
         // receive a imu message
         sensor_msgs::ImuConstPtr simu = m.instantiate<sensor_msgs::Imu>(); 
         cout<<"bag_conversion_l515.cpp: receive an gyro at time: "<<simu->header.stamp<<endl;
@@ -234,7 +234,7 @@ void processBagfile(string bagfile)
           outbag.write(imu_tpc, mv[i].header.stamp, mv[i]); 
         }
       }
-    else if(m.getTopic() == acc_tpc){
+    else if(m.getTopic() == acc_tpc || ("/"+m.getTopic()) == acc_tpc){
           // receive a imu message
         sensor_msgs::ImuConstPtr simu = m.instantiate<sensor_msgs::Imu>(); 
         cout<<"bag_conversion_l515.cpp: receive an accel at time: "<<simu->header.stamp<<endl;
